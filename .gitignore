@@ -1,0 +1,15 @@
+build/
+*.ptau
+*.log
+scripts/step/input.json
+scripts/step/proof.json
+scripts/step/public.json
+scripts/step/witness.wtns
+scripts/rotate/input.json
+scripts/rotate/proof.json
+scripts/rotate/public.json
+scripts/rotate/witness.wtns
+scripts/input.json
+scripts/proof.json
+scripts/public.json
+scripts/witness.wtns
