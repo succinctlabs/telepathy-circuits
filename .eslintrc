@@ -8,7 +8,8 @@
         "plugin:@typescript-eslint/recommended"
     ],
     "rules": {
-        "no-console": 1
+        "no-console": 1,
+        "no-constant-condition": ["error", { "checkLoops": false }]
     },
     "ignorePatterns": ["**/*.d.ts"]
 }
