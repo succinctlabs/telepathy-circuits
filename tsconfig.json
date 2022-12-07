@@ -10,5 +10,6 @@
         "strict": true,
         "skipLibCheck": true,
         "composite": true
-    }
+    },
+    "exclude": ["dist/**/*"]
 }
