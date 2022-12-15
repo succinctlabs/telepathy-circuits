@@ -2951,13 +2951,13 @@ __metadata:
   linkType: hard
 
 "@humanwhocodes/config-array@npm:^0.11.6":
-  version: 0.11.7
-  resolution: "@humanwhocodes/config-array@npm:0.11.7"
+  version: 0.11.8
+  resolution: "@humanwhocodes/config-array@npm:0.11.8"
   dependencies:
     "@humanwhocodes/object-schema": ^1.2.1
     debug: ^4.1.1
     minimatch: ^3.0.5
-  checksum: cf506dc45d9488af7fbf108ea6ac2151ba1a25e6d2b94b9b4fc36d2c1e4099b89ff560296dbfa13947e44604d4ca4a90d97a4fb167370bf8dd01a6ca2b6d83ac
+  checksum: 0fd6b3c54f1674ce0a224df09b9c2f9846d20b9e54fabae1281ecfc04f2e6ad69bf19e1d6af6a28f88e8aa3990168b6cb9e1ef755868c3256a630605ec2cb1d3
   languageName: node
   linkType: hard
 
@@ -4338,47 +4338,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:4.19.1":
-  version: 4.19.1
-  resolution: "@tanstack/query-core@npm:4.19.1"
-  checksum: a54a613d5b7abe2bba352fa26228bee0589eb8116bf482760dbe39474202b08cfc3899100e478f0bd1ae1a7bd60dcda0634c04bec56a98346763d32bc7720b54
+"@tanstack/query-core@npm:4.20.4":
+  version: 4.20.4
+  resolution: "@tanstack/query-core@npm:4.20.4"
+  checksum: bdb652296e4093d8cb042a67b9c035bc0a756e09a3b12aeb070068b07adc1c71174c2e6108f2a8c3322a26cb73ba57f431326aa0b813c81621674b9cc208cd93
   languageName: node
   linkType: hard
 
-"@tanstack/query-persist-client-core@npm:4.19.1":
-  version: 4.19.1
-  resolution: "@tanstack/query-persist-client-core@npm:4.19.1"
+"@tanstack/query-persist-client-core@npm:4.20.4":
+  version: 4.20.4
+  resolution: "@tanstack/query-persist-client-core@npm:4.20.4"
   peerDependencies:
-    "@tanstack/query-core": 4.19.1
-  checksum: 4beaf8e750d008dedea3bf7e0db359d8142ff5dc211eddcd7df336306202b11240cd33c49d4cd177bbc05ef3e9548a78e40996e6aa9f59dddf9a4a8c80f73679
+    "@tanstack/query-core": 4.20.4
+  checksum: f242b9e44a4fc8a647b8ac7bf19f3f570183940cba187d65a7a908743c5e617042ce46a000a4ecbcaf3ba75b6b6d4934a280c7b40340518eec6243dfb2da5faf
   languageName: node
   linkType: hard
 
 "@tanstack/query-sync-storage-persister@npm:^4.14.5":
-  version: 4.19.1
-  resolution: "@tanstack/query-sync-storage-persister@npm:4.19.1"
+  version: 4.20.4
+  resolution: "@tanstack/query-sync-storage-persister@npm:4.20.4"
   dependencies:
-    "@tanstack/query-persist-client-core": 4.19.1
-  checksum: 82ee8c54409a51adcc7b1adb216cfa32bce4bf166cfe1a64856ae709e226dc25f4c8d742385b21bf8ee90737cf34344a9b4e98523569625f79de686b9de7441c
+    "@tanstack/query-persist-client-core": 4.20.4
+  checksum: cb773f508b182e49bc9db2471985bfd8a24a0a464fe2e8447c80a4e161ec6a7348e42a0f6a82fa5cce1e12fb30f027fc253f01594ccf30dadf22740cbf0f4b39
   languageName: node
   linkType: hard
 
 "@tanstack/react-query-persist-client@npm:^4.14.5":
-  version: 4.19.1
-  resolution: "@tanstack/react-query-persist-client@npm:4.19.1"
+  version: 4.20.4
+  resolution: "@tanstack/react-query-persist-client@npm:4.20.4"
   dependencies:
-    "@tanstack/query-persist-client-core": 4.19.1
+    "@tanstack/query-persist-client-core": 4.20.4
   peerDependencies:
-    "@tanstack/react-query": 4.19.1
-  checksum: 9f2c4874e8b82a91cb048454e43b50c57f7f5f43ff774869f14cd4924a64b123eade3482581d1d2e6ae91a127f3acf7e6c0b770472d8228c2138af5e892a1994
+    "@tanstack/react-query": 4.20.4
+  checksum: 37a3ffb1bad2a252f2aec7e6abe7c7ee3a23ea4679dc797bec395a7357fc59561c18bbd6a4d2a9a952f3ac50f979db5464169318ce84e30276460e2058939c90
   languageName: node
   linkType: hard
 
 "@tanstack/react-query@npm:^4.14.5":
-  version: 4.19.1
-  resolution: "@tanstack/react-query@npm:4.19.1"
+  version: 4.20.4
+  resolution: "@tanstack/react-query@npm:4.20.4"
   dependencies:
-    "@tanstack/query-core": 4.19.1
+    "@tanstack/query-core": 4.20.4
     use-sync-external-store: ^1.2.0
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
@@ -4389,7 +4389,7 @@ __metadata:
       optional: true
     react-native:
       optional: true
-  checksum: cce8b51c5cbaff007efb2fc54c5e03a2191e363626226903c345ae9baf0d48a36fc322383e24aff4f12250e672da67d3ceaa9819bbb16ace98a5c7bdff098a61
+  checksum: ba9e2f175c58bde592c0ad14285f289585474763f8d68072d651fa75263a3a7f75eead5b62aa3140db133b95468498bc58817d07513f6f857be2bd8031b491da
   languageName: node
   linkType: hard
 
@@ -6095,9 +6095,9 @@ __metadata:
   linkType: hard
 
 "axe-core@npm:^4.4.3":
-  version: 4.6.0
-  resolution: "axe-core@npm:4.6.0"
-  checksum: ed112f76bbb2e2ab52dda623fc4baf882b2d00045a55b2cc15358e891f7f164d674be1a2fbcfd49e11d064b146c387c5c9c3c29d7d59c9de6c22c65b86eb68ac
+  version: 4.6.1
+  resolution: "axe-core@npm:4.6.1"
+  checksum: a376c9e29499711d67219b9f9b5e97bcf9d8e4cd11316e4d68807054a1eae5054d93ccb37785851c0db64e54d132586ded807d18fb206c668138b53c6ae24d4d
   languageName: node
   linkType: hard
 
