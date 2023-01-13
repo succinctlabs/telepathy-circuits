@@ -20,7 +20,7 @@ template G1AddMany(SYNC_COMMITTEE_SIZE, LOG_2_SYNC_COMMITTEE_SIZE, N, K) {
 
     component reducers[LOG_2_SYNC_COMMITTEE_SIZE];
     for (var i = 0; i < LOG_2_SYNC_COMMITTEE_SIZE; i++) {
-        var BATCH_SIZE = 512 \ (2 ** i);
+        var BATCH_SIZE = SYNC_COMMITTEE_SIZE \ (2 ** i);
         reducers[i] = G1Reduce(BATCH_SIZE, N, K);
         for (var j = 0; j < BATCH_SIZE; j++) {
             if (i == 0) {

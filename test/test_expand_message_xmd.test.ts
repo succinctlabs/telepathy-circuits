@@ -1,13 +1,13 @@
 import path from 'path';
-import { expect } from 'chai';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const circom_tester = require('circom_tester');
 const wasm_tester = circom_tester.wasm;
 
 describe('BLS12-381-ExpandMessageXMD', function () {
-    this.timeout(1000 * 1000);
-
+    jest.setTimeout(1000 * 1000);
     let circuit: any;
-    before(async function () {
+    beforeEach(async function () {
         circuit = await wasm_tester(
             path.join(__dirname, 'circuits', 'test_expand_message_xmd.circom')
         );
@@ -40,7 +40,7 @@ describe('BLS12-381-ExpandMessageXMD', function () {
         ];
         const witness = await circuit.calculateWitness(input);
         for (let i = 0; i < 256; i++) {
-            expect(witness[i + 1]).to.equal(BigInt(output[i]));
+            expect(witness[i + 1]).toBe(BigInt(output[i]));
         }
         await circuit.checkConstraints(witness);
     });
@@ -72,7 +72,7 @@ describe('BLS12-381-ExpandMessageXMD', function () {
         ];
         const witness = await circuit.calculateWitness(input);
         for (let i = 0; i < 256; i++) {
-            expect(witness[i + 1]).to.equal(BigInt(output[i]));
+            expect(witness[i + 1]).toBe(BigInt(output[i]));
         }
         await circuit.checkConstraints(witness);
     });

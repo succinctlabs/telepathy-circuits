@@ -1,13 +1,16 @@
 import path from 'path';
-const circom_tester = require('circom_tester');
-const wasm_tester = circom_tester.wasm;
+
 import { msg_hash } from './bls_utils';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const circom_tester = require('circom_tester');
+const wasm_tester = circom_tester.wasm;
+
 describe('HashToField', function () {
-    this.timeout(1000 * 1000);
+    jest.setTimeout(1000 * 1000);
 
     let circuit: any;
-    before(async function () {
+    beforeAll(async function () {
         circuit = await wasm_tester(path.join(__dirname, 'circuits', 'test_hash_to_field.circom'));
     });
 
@@ -17,7 +20,7 @@ describe('HashToField', function () {
         };
         const witness = await circuit.calculateWitness(witnessInput);
         const expectedOut = await msg_hash(new Uint8Array(witnessInput.msg));
-        await circuit.assertOut(witness, { result: expectedOut });
+        await circuit.assertOut(witness, { out: expectedOut });
         await circuit.checkConstraints(witness);
     });
 
@@ -27,7 +30,7 @@ describe('HashToField', function () {
         };
         const witness = await circuit.calculateWitness(witnessInput);
         const expectedOut = await msg_hash(new Uint8Array(witnessInput.msg));
-        await circuit.assertOut(witness, { result: expectedOut });
+        await circuit.assertOut(witness, { out: expectedOut });
         await circuit.checkConstraints(witness);
     });
 });
