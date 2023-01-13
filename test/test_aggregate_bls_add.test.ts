@@ -1,5 +1,8 @@
 import path from 'path';
+
 import { PointG1 } from '@noble/bls12-381';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const circom_tester = require('circom_tester');
 const wasm_tester = circom_tester.wasm;
 
@@ -31,10 +34,10 @@ const private_keys = [
 ];
 
 describe('BLS12-381-AggregateAdd', function () {
-    this.timeout(1000 * 1000);
+    jest.setTimeout(1000 * 1000);
 
     let circuit: any;
-    before(async function () {
+    beforeAll(async function () {
         circuit = await wasm_tester(
             path.join(__dirname, 'circuits', 'test_aggregate_bls_add_4.circom')
         );
@@ -108,7 +111,7 @@ describe('BLS12-381-AggregateAdd', function () {
                     [bigint_to_array(n, k, pub2x), bigint_to_array(n, k, pub2y)],
                     [bigint_to_array(n, k, pub3x), bigint_to_array(n, k, pub3y)]
                 ],
-                pubkeybits: bitArray
+                bits: bitArray
             });
             await circuit.assertOut(witness, {
                 out: [bigint_to_array(n, k, sumAllx), bigint_to_array(n, k, sumAlly)]

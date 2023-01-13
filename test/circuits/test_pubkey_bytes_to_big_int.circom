@@ -1,5 +1,6 @@
-pragma circom 2.0.2;
+pragma circom 2.0.5;
 
-include "../../circuits/sync_committee_committments.circom";
+include "../../circuits/bls.circom";
+include "../../circuits/constants.circom";
 
-component main {public [pubkeyX, pubkeyBytes]} = AssertPubkeyBytesMatchesPubkeyXBigIntNoCheck(55, 7, 48);
+component main {public [in]} = G1BytesToBigInt(55, 7, 48);
