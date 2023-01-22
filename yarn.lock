@@ -4908,6 +4908,7 @@ __metadata:
     "@ethereumjs/tx": ^4.0.1
     "@ethereumjs/vm": ^6.2.0
     "@jest/globals": ^29.3.1
+    "@lodestar/types": ^1.3.0
     "@prisma/client": ^4.6.1
     "@succinctlabs/telepathy-sdk": "workspace:^"
     "@types/debug": ^4.1.7
@@ -4926,6 +4927,7 @@ __metadata:
     prisma: ^4.6.1
     ts-jest: ^29.0.3
     tsc: ^2.0.4
+    tsx: ^3.12.2
     typescript: ^4.8.4
   languageName: unknown
   linkType: soft
@@ -19056,7 +19058,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:>=3.7.0, tsx@npm:^3.12.1":
+"tsx@npm:>=3.7.0, tsx@npm:^3.12.1, tsx@npm:^3.12.2":
   version: 3.12.2
   resolution: "tsx@npm:3.12.2"
   dependencies:
