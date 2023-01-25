@@ -93,6 +93,10 @@ template CoreVerifyPubkeyG1(n, k){
         lt[9].a[idx] <== hash[1][1][idx];
     } 
 
+    for(var idx = 0; idx < 10; idx++){
+        lt[idx].out === 1;
+    }
+
     // check all registers are in [0, 2^n)
     component check[5]; 
     for(var i=0; i<5; i++)

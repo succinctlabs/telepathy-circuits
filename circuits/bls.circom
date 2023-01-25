@@ -87,6 +87,7 @@ template parallel G1Add(N, K) {
     signal input bit1;
     signal input bit2;
 
+    /* COMPUTE BLS ADDITION */
     signal output out[2][K];
     signal output out_bit;
     out_bit <== bit1 + bit2 - bit1 * bit2;
@@ -169,4 +170,57 @@ template G1BytesToBigInt(N, K, G1_POINT_SIZE) {
     for (var i = 0; i < K; i++) {
         out[i] <== convertBitsToBigInt[i].out;
     }
+}
+
+
+template G1BytesToSignFlag(N, K, G1_POINT_SIZE) {
+    signal input in[G1_POINT_SIZE];
+    signal output out;
+
+    component bitifiers[G1_POINT_SIZE];
+    for (var i=0; i < G1_POINT_SIZE; i++) {
+        bitifiers[i] = Num2Bits(8);
+        bitifiers[i].in <== in[i];
+    }
+
+    signal pubkeyBits[G1_POINT_SIZE * 8];
+    for (var i = G1_POINT_SIZE - 1; i >= 0; i--) {
+        for (var j = 0; j < 8; j++) {
+            pubkeyBits[(G1_POINT_SIZE - 1 - i) * 8 + j] <== bitifiers[i].out[j];
+        }
+    }    
+
+    out <== pubkeyBits[381];
+}
+
+
+template G1BigIntToSignFlag(N, K) {
+    signal input in[K];
+    signal output out;
+
+    var P[K] = getBLS128381Prime();
+    var LOG_K = log_ceil(K);
+    component mul = BigMult(N, K);
+
+    signal two[K];
+    for (var i = 0; i < K; i++) {
+        if (i == 0) {
+            two[i] <== 2;
+        } else {
+            two[i] <== 0;
+        }
+    }
+
+    for (var i = 0; i < K; i++) {
+        mul.a[i] <== in[i];
+        mul.b[i] <== two[i];
+    }
+
+    component lt = BigLessThan(N, K);
+    for (var i = 0; i < K; i++) {
+        lt.a[i] <== mul.out[i];
+        lt.b[i] <== P[i];
+    }
+
+    out <== 1 - lt.out;
 }

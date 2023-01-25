@@ -22,8 +22,8 @@ include "./sync_committee.circom";
 /*
  * Maps the SSZ commitment of the sync committee's pubkeys to a SNARK friendly
  * one using the Poseidon hash function. This is done once every sync committee
- * period to reduce the number of constraints (~70M) in the LightClientUpdate
- * circuit. Called by updateNextSyncCommittee() in the light client.
+ * period to reduce the number of constraints (~70M) in the Step circuit. Called by rotate()
+ * in the light client.
  *
  * @input  pubkeyBytes             The sync committee pubkeys in bytes
  * @input  aggregatePubkeyBytes    The aggregate sync committee pubkey in bytes
@@ -36,17 +36,19 @@ template Rotate() {
     var N = getNumBitsPerRegister();
     var K = getNumRegisters();
     var SYNC_COMMITTEE_SIZE = getSyncCommitteeSize();
+    var LOG_2_SYNC_COMMITTEE_SIZE = getLog2SyncCommitteeSize();
     var SYNC_COMMITTEE_DEPTH = getSyncCommitteeDepth();
     var SYNC_COMMITTEE_INDEX = getSyncCommitteeIndex();
     var G1_POINT_SIZE = getG1PointSize();
 
     /* Sync Commmittee */
-    signal input pubkeysBytes[SYNC_COMMITTEE_SIZE][48];
-    signal input aggregatePubkeyBytes[48];
-    signal input pubkeysBigInt[SYNC_COMMITTEE_SIZE][2][K];
-    signal input aggregatePubkeyBigInt[2][K];
+    signal input pubkeysBytes[SYNC_COMMITTEE_SIZE][G1_POINT_SIZE];
+    signal input aggregatePubkeyBytesX[G1_POINT_SIZE];
+    signal input pubkeysBigIntX[SYNC_COMMITTEE_SIZE][K];
+    signal input pubkeysBigIntY[SYNC_COMMITTEE_SIZE][K];
     signal input syncCommitteeSSZ[32];
     signal input syncCommitteeBranch[SYNC_COMMITTEE_DEPTH][32];
+    signal input syncCommitteePoseidon;
 
     /* Finalized Header */
     signal input finalizedHeaderRoot[32];
@@ -55,9 +57,6 @@ template Rotate() {
     signal input finalizedParentRoot[32];
     signal input finalizedStateRoot[32];
     signal input finalizedBodyRoot[32];
-
-    /* Sync Committee */
-    signal input syncCommitteePoseidon;
 
     /* VALIDATE FINALIZED HEADER AGAINST FINALIZED HEADER ROOT */
     component sszFinalizedHeader = SSZPhase0BeaconBlockHeader();
@@ -87,35 +86,56 @@ template Rotate() {
         verifySyncCommittee.out[i] === finalizedStateRoot[i];
     }
 
-    /* MAKE SURE BYTE AND BIG INT REPRESENTATION OF G1 POINTS MATCH */
-    component g1BytesToBigInt[SYNC_COMMITTEE_SIZE+1];
+    /* VERIFY BYTE AND BIG INT REPRESENTATION OF G1 POINTS MATCH */
+    component g1BytesToBigInt[SYNC_COMMITTEE_SIZE];
     for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
         g1BytesToBigInt[i] = G1BytesToBigInt(N, K, G1_POINT_SIZE);
         for (var j = 0; j < 48; j++) {
             g1BytesToBigInt[i].in[j] <== pubkeysBytes[i][j];
         }
         for (var j = 0; j < K; j++) {
-            g1BytesToBigInt[i].out[j] === pubkeysBigInt[i][0][j];
+            g1BytesToBigInt[i].out[j] === pubkeysBigIntX[i][j];
         }
     }
-    var aggregateKeyIdx = SYNC_COMMITTEE_SIZE;
-    g1BytesToBigInt[aggregateKeyIdx] = G1BytesToBigInt(N, K, G1_POINT_SIZE);
-    for (var i = 0; i < 48; i++) {
-        g1BytesToBigInt[aggregateKeyIdx].in[i] <== aggregatePubkeyBytes[i];
+
+    /* VERIFY THAT THE WITNESSED Y-COORDINATES MAKE THE PUBKEYS LAY ON THE CURVE */
+    component isValidPoint[SYNC_COMMITTEE_SIZE];
+    for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
+        isValidPoint[i] = SubgroupCheckG1WithValidX(N, K);
+        for (var j = 0; j < K; j++) {
+            isValidPoint[i].in[0][j] <== pubkeysBigIntX[i][j];
+            isValidPoint[i].in[1][j] <== pubkeysBigIntY[i][j];
+        }
     }
-    for (var i = 0; i < K; i++) {
-        g1BytesToBigInt[aggregateKeyIdx].out[i] === aggregatePubkeyBigInt[0][i];
+
+    /* VERIFY THAT THE WITNESSESED Y-COORDINATE HAS THE CORRECT SIGN */
+    component bytesToSignFlag[SYNC_COMMITTEE_SIZE];
+    component bigIntToSignFlag[SYNC_COMMITTEE_SIZE];
+    for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
+        bytesToSignFlag[i] = G1BytesToSignFlag(N, K, G1_POINT_SIZE);
+        bigIntToSignFlag[i] = G1BigIntToSignFlag(N, K);
+        for (var j = 0; j < G1_POINT_SIZE; j++) {
+            bytesToSignFlag[i].in[j] <== pubkeysBytes[i][j];
+        }
+        for (var j = 0; j < K; j++) {
+            bigIntToSignFlag[i].in[j] <== pubkeysBigIntY[i][j];
+        }
+        bytesToSignFlag[i].out === bigIntToSignFlag[i].out;
     }
 
     /* VERIFY THE SSZ ROOT OF THE SYNC COMMITTEE */
-    component sszSyncCommittee = SSZPhase0SyncCommittee();
+    component sszSyncCommittee = SSZPhase0SyncCommittee(
+        SYNC_COMMITTEE_SIZE,
+        LOG_2_SYNC_COMMITTEE_SIZE,
+        G1_POINT_SIZE
+    );
     for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
         for (var j = 0; j < 48; j++) {
             sszSyncCommittee.pubkeys[i][j] <== pubkeysBytes[i][j];
         }
     }
     for (var i = 0; i < 48; i++) {
-        sszSyncCommittee.aggregatePubkey[i] <== aggregatePubkeyBytes[i];
+        sszSyncCommittee.aggregatePubkey[i] <== aggregatePubkeyBytesX[i];
     }
     for (var i = 0; i < 32; i++) {
         syncCommitteeSSZ[i] === sszSyncCommittee.out[i];
@@ -129,8 +149,8 @@ template Rotate() {
     );
     for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
         for (var j = 0; j < K; j++) {
-            computePoseidonRoot.pubkeys[i][0][j] <== pubkeysBigInt[i][0][j];
-            computePoseidonRoot.pubkeys[i][1][j] <== pubkeysBigInt[i][1][j];
+            computePoseidonRoot.pubkeys[i][0][j] <== pubkeysBigIntX[i][j];
+            computePoseidonRoot.pubkeys[i][1][j] <== pubkeysBigIntY[i][j];
         }
     }
     syncCommitteePoseidon === computePoseidonRoot.out;

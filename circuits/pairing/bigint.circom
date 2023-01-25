@@ -104,21 +104,6 @@ template ModSumThree(n) {
     sum <== a + b + c - carry * (1 << n);
 }
 
-template ModSumFour(n) {
-    assert(n + 2 <= 253);
-    signal input a;
-    signal input b;
-    signal input c;
-    signal input d;
-    signal output sum;
-    signal output carry;
-
-    component n2b = Num2Bits(n + 2);
-    n2b.in <== a + b + c + d;
-    carry <== n2b.out[n] + 2 * n2b.out[n + 1];
-    sum <== a + b + c + d - carry * (1 << n);
-}
-
 // product mod 2**n with carry
 template ModProd(n) {
     assert(n <= 126);
@@ -143,6 +128,7 @@ template ModProd(n) {
 
 // split a n + m bit input into two outputs
 template Split(n, m) {
+    assert(n + m < 254);
     assert(n <= 126);
     signal input in;
     signal output small;
@@ -161,6 +147,7 @@ template Split(n, m) {
 
 // split a n + m + k bit input into three outputs
 template SplitThree(n, m, k) {
+    assert(n + m + k < 254);
     assert(n <= 126);
     signal input in;
     signal output small;
@@ -265,6 +252,7 @@ template BigMultShortLong(n, k, m_out) {
            b_poly[i] = b_poly[i] + b[j] * pow[i][j];
        }
    }
+
    for (var i = 0; i < 2 * k - 1; i++) {
       out_poly[i] === a_poly[i] * b_poly[i];
    }
@@ -324,6 +312,7 @@ template BigMultShortLongUnequal(n, ka, kb, m_out) {
 // in[i] contains longs
 // out[i] contains shorts
 template LongToShortNoEndCarry(n, k) {
+    assert(k > 2);
     assert(n <= 126);
     signal input in[k];
     signal output out[k+1];
@@ -372,6 +361,7 @@ template LongToShortNoEndCarry(n, k) {
 }
 
 template BigMult(n, k) {
+    assert(k <= 2**n);
     signal input a[k];
     signal input b[k];
     signal output out[2 * k];
@@ -447,6 +437,7 @@ template BigLessThan(n, k){
 
 // leading register of b should be non-zero
 template BigMod(n, k) {
+    assert(k < 50);
     assert(n <= 126);
     signal input a[2 * k];
     signal input b[k];
@@ -517,6 +508,7 @@ template BigMod(n, k) {
 
 // copied from BigMod to allow a to have m registers and use long_div2
 template BigMod2(n, k, m) {
+    assert(k <= 50 && m - k < 50);
     assert(n <= 126);
     signal input a[m];
     signal input b[k];
@@ -708,9 +700,10 @@ template BigMultModP(n, k) {
 }
 
 template BigModInv(n, k) {
+    assert(k < 50);
     assert(n <= 252);
     signal input in[k];
-    signal input p[k];
+    signal input p[k]; // p represents a prime
     signal output out[k];
 
     // length k
@@ -794,6 +787,7 @@ Notes:
 m_out is the expected max number of bits in the output registers
 */
 template PrimeReduce(n, k, m, p, m_out){
+    assert(k <= 50);
     signal input in[m+k]; 
     signal output out[k];
 
