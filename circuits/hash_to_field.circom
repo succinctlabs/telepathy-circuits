@@ -154,9 +154,6 @@ template ExpandMessageXMD(MSG_LEN, DST_LEN, EXPANDED_LEN) {
     }
     dstPrime[DST_LEN] <== i2ospDst.out[0];
   
-    component i2ospZPad = I2OSP(R_IN_BYTES);
-    i2ospZPad.in <== 0;
-  
     component i2ospLibStr = I2OSP(2);
     i2ospLibStr.in <== EXPANDED_LEN;
 
@@ -165,7 +162,7 @@ template ExpandMessageXMD(MSG_LEN, DST_LEN, EXPANDED_LEN) {
     component sha0 = Sha256Bytes(S256_0_INPUT_BYTE_LEN);
     for (var i = 0; i < S256_0_INPUT_BYTE_LEN; i++) {
         if (i < R_IN_BYTES) {
-            sha0.in[i] <== i2ospZPad.out[i];
+            sha0.in[i] <== 0;
         } else if (i < R_IN_BYTES + MSG_LEN) {
             sha0.in[i] <== msg[i - R_IN_BYTES];
         } else if (i < R_IN_BYTES + MSG_LEN + 2) {
@@ -179,15 +176,15 @@ template ExpandMessageXMD(MSG_LEN, DST_LEN, EXPANDED_LEN) {
 
     // b[0] = sha256(s256_0.out || i2osp(1, 1) || dst_prime)
     component s256s[ELL];
-    var S256S_0_INPUT_BYTE_LEN = 32 + 1 + DST_LEN + 1;
+    var S256S_0_INPUT_BYTE_LEN = B_IN_BYTES + 1 + DST_LEN + 1;
     s256s[0] = Sha256Bytes(S256S_0_INPUT_BYTE_LEN);
     for (var i = 0; i < S256S_0_INPUT_BYTE_LEN; i++) {
-        if (i < 32) {
+        if (i < B_IN_BYTES) {
             s256s[0].in[i] <== sha0.out[i];
-        } else if (i < 32 + 1) {
+        } else if (i < B_IN_BYTES + 1) {
             s256s[0].in[i] <== 1;
         } else {
-            s256s[0].in[i] <== dstPrime[i - 32 - 1];
+            s256s[0].in[i] <== dstPrime[i - B_IN_BYTES - 1];
         }
     }
 
@@ -195,8 +192,8 @@ template ExpandMessageXMD(MSG_LEN, DST_LEN, EXPANDED_LEN) {
     component arrayXOR[ELL-1];
     component i2ospIndex[ELL-1];
     for (var i = 1; i < ELL; i++) {
-        arrayXOR[i-1] = ArrayXOR(32);
-        for (var j = 0; j < 32; j++) {
+        arrayXOR[i-1] = ByteArrayXOR(B_IN_BYTES);
+        for (var j = 0; j < B_IN_BYTES; j++) {
             arrayXOR[i-1].a[j] <== sha0.out[j];
             arrayXOR[i-1].b[j] <== s256s[i-1].out[j];
         }
@@ -204,37 +201,63 @@ template ExpandMessageXMD(MSG_LEN, DST_LEN, EXPANDED_LEN) {
         i2ospIndex[i-1] = I2OSP(1);
         i2ospIndex[i-1].in <== i + 1;
 
-        var S256S_INPUT_BYTE_LEN = 32 + 1 + DST_LEN + 1;
+        var S256S_INPUT_BYTE_LEN = B_IN_BYTES + 1 + DST_LEN + 1;
         s256s[i] = Sha256Bytes(S256S_INPUT_BYTE_LEN);
         for (var j = 0; j < S256S_INPUT_BYTE_LEN; j++) {
-          if (j < 32) {
+          if (j < B_IN_BYTES) {
               s256s[i].in[j] <== arrayXOR[i-1].out[j];
-          } else if (j < 32 + 1) {
-              s256s[i].in[j] <== i2ospIndex[i-1].out[j-32];
+          } else if (j < B_IN_BYTES + 1) {
+              s256s[i].in[j] <== i2ospIndex[i-1].out[j-B_IN_BYTES];
           } else {
-              s256s[i].in[j] <== dstPrime[j-32-1];
+              s256s[i].in[j] <== dstPrime[j-B_IN_BYTES-1];
           }
         }
     }
 
     for (var i = 0; i < EXPANDED_LEN; i++) {
-        out[i] <== s256s[i \ 32].out[i % 32];
+        out[i] <== s256s[i \ B_IN_BYTES].out[i % B_IN_BYTES];
     }
 }
 
 
-template ArrayXOR(n) {
+template ByteArrayXOR(n) {
     signal input a[n];
     signal input b[n];
     signal output out[n];
 
+    component bitifiersA[n];
+    component bitifiersB[n];
     for (var i = 0; i < n; i++) {
-        out[i] <-- a[i] ^ b[i];
+        bitifiersA[i] = Num2Bits(8);
+        bitifiersA[i].in <== a[i];
+        bitifiersB[i] = Num2Bits(8);
+        bitifiersB[i].in <== b[i];
+    }
+
+    signal xorBits[n][8];
+    for (var i = 0; i < n; i++) {
+        for (var j = 0; j < 8; j++) {
+            xorBits[i][j] <== bitifiersA[i].out[j] + bitifiersB[i].out[j]
+                - 2 * bitifiersA[i].out[j] * bitifiersB[i].out[j];
+        }
+    }
+
+    component byteifiers[n];
+    for (var i = 0; i < n; i++) {
+        byteifiers[i] = Bits2Num(8);
+        for (var j = 0; j < 8; j++) {
+            byteifiers[i].in[j] <== xorBits[i][j];
+        }
+    }
+
+    for (var i = 0; i < n; i++) {
+        out[i] <== byteifiers[i].out;
     }
 }
 
 
 template I2OSP(l) {
+    assert(l < 31);
     signal input in;
     signal output out[l];
   

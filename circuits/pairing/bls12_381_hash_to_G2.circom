@@ -719,3 +719,13 @@ template SubgroupCheckG1(n, k){
     }
     is_eq.out === 1;
 }
+
+template SubgroupCheckG1WithValidX(n, k){
+    signal input in[2][k];
+    var p[50] = get_BLS12_381_prime(n, k);
+    var x_abs = get_BLS12_381_parameter();
+    var b = 4;
+    component is_on_curve = PointOnCurve(n, k, 0, b, p);
+    for(var i=0; i<2; i++)for(var idx=0; idx<k; idx++)
+        is_on_curve.in[i][idx] <== in[i][idx];
+}

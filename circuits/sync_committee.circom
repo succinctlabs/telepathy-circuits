@@ -50,6 +50,17 @@ template VerifySyncCommitteeSignature(
     }
     syncCommitteeRoot === computeSyncCommitteeRoot.out;
 
+    /* VERIFY THAT THE WITNESSED Y-COORDINATES MAKE THE PUBKEYS LAY ON THE CURVE */
+    component isValidPoint[SYNC_COMMITTEE_SIZE];
+    for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
+        isValidPoint[i] = SubgroupCheckG1WithValidX(N, K);
+        for (var j = 0; j < 2; j++) {
+            for (var k = 0; k < K; k++) {
+                isValidPoint[i].in[j][k] <== pubkeys[i][j][k];
+            }
+        }
+    }
+
     /* COMPUTE AGGREGATE PUBKEY BASED ON AGGREGATION BITS */
     component getAggregatePublicKey = G1AddMany(
         SYNC_COMMITTEE_SIZE,
@@ -84,4 +95,7 @@ template VerifySyncCommitteeSignature(
         computedParticipation += aggregationBits[i];
     }
     participation <== computedParticipation;
+    component zeroCheck = IsZero();
+    zeroCheck.in <== computedParticipation;
+    zeroCheck.out === 0;
 }

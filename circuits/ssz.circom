@@ -8,6 +8,7 @@ include "./sha256.circom";
  */
 
 template SSZLayer(numBytes) {
+    assert(numBytes >= 64);
     signal input in[numBytes];
     signal output out[numBytes\ 2];
 
@@ -55,15 +56,22 @@ template SSZArray(numBytes, log2b) {
 }
 
 
-template SSZPhase0SyncCommittee() {
-    signal input pubkeys[512][48];
-    signal input aggregatePubkey[48];
+template SSZPhase0SyncCommittee(
+    SYNC_COMMITTEE_SIZE,
+    LOG_2_SYNC_COMMITTEE_SIZE,
+    G1_POINT_SIZE
+) {
+    signal input pubkeys[SYNC_COMMITTEE_SIZE][G1_POINT_SIZE];
+    signal input aggregatePubkey[G1_POINT_SIZE];
     signal output out[32];
 
-    component sszPubkeys = SSZArray(32768, 10);
-    for (var i = 0; i < 512; i++) {
+    component sszPubkeys = SSZArray(
+        SYNC_COMMITTEE_SIZE * 64,
+        LOG_2_SYNC_COMMITTEE_SIZE + 1
+    );
+    for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
         for (var j = 0; j < 64; j++) {
-            if (j < 48) {
+            if (j < G1_POINT_SIZE) {
                 sszPubkeys.in[i * 64 + j] <== pubkeys[i][j];
             } else {
                 sszPubkeys.in[i * 64 + j] <== 0;
@@ -73,7 +81,7 @@ template SSZPhase0SyncCommittee() {
 
     component sszAggregatePubkey = SSZArray(64, 1);
     for (var i = 0; i < 64; i++) {
-        if (i < 48) {
+        if (i < G1_POINT_SIZE) {
             sszAggregatePubkey.in[i] <== aggregatePubkey[i];
         } else {
             sszAggregatePubkey.in[i] <== 0;
@@ -151,7 +159,6 @@ template SSZRestoreMerkleRoot(depth, index) {
     signal input branch[depth][32];
     signal output out[32];
 
-    signal value[depth][32];
     component hasher[depth];
 
     var firstOffset;
