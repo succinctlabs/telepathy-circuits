@@ -4985,6 +4985,7 @@ __metadata:
     pm2: 5.2.2
     prisma: ^4.6.1
     ts-jest: ^29.0.3
+    ts-parse-database-url: 1.0.3
     tsc: ^2.0.4
     tsx: ^3.12.2
     typescript: ^4.8.4
@@ -15767,6 +15768,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mongodb-uri@npm:^0.9.7":
+  version: 0.9.7
+  resolution: "mongodb-uri@npm:0.9.7"
+  checksum: a0fbc7ed6c11d4f9167c6e4af5e5e083667966846f71d310d2dd123850760ada8309b38176b9b96d3f3e65a7a98078ff9a3784b3a8d285f0a28f9aff01975b31
+  languageName: node
+  linkType: hard
+
 "ms@npm:2.0.0":
   version: 2.0.0
   resolution: "ms@npm:2.0.0"
@@ -20179,6 +20187,15 @@ __metadata:
     ts-node-transpile-only: dist/bin-transpile.js
     ts-script: dist/bin-script-deprecated.js
   checksum: 090adff1302ab20bd3486e6b4799e90f97726ed39e02b39e566f8ab674fd5bd5f727f43615debbfc580d33c6d9d1c6b1b3ce7d8e3cca3e20530a145ffa232c35
+  languageName: node
+  linkType: hard
+
+"ts-parse-database-url@npm:1.0.3":
+  version: 1.0.3
+  resolution: "ts-parse-database-url@npm:1.0.3"
+  dependencies:
+    mongodb-uri: ^0.9.7
+  checksum: 1bc7cec06ebd2bc243d718b37778ce442f67611d3b8f8744a6051daecb3486307822e993f52525ddc8adf7272d97b8214b9100116b317065a58d4fbaa0b2fac5
   languageName: node
   linkType: hard
 
