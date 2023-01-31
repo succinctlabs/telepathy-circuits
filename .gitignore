@@ -17,3 +17,7 @@ scripts/witness.wtns
 **/*.wasm
 **/*.sym
 test/generate_input_data.ts
+
+.yarn/
+dist/
+node_modules/
