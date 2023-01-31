@@ -4842,6 +4842,7 @@ __metadata:
     "@succinctlabs/telepathy-sdk": "workspace:^"
     "@types/chai": ^4.3.1
     "@types/expect": ^24.3.0
+    "@types/jest": ^29.2.3
     "@types/node": ^18.0.4
     "@typescript-eslint/eslint-plugin": ^5.45.0
     "@typescript-eslint/parser": ^5.45.0
