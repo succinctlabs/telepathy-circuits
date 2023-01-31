@@ -10,5 +10,6 @@
         "skipLibCheck": true,
         "composite": true
     },
+    "types": ["@types/jest"],
     "exclude": ["dist/**/*"]
 }

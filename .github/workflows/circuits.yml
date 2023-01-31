@@ -1,0 +1,23 @@
+name: Circuits
+on:
+  pull_request:
+    paths:
+      - '**'
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the Project
+        uses: actions/checkout@v3
+
+      - name: Setup project dependencies
+        uses: ./.github/actions/base-setup
+
+      - name: Run Linter
+        run: yarn lint
+        shell: bash
+
+      - name: Run Type Checking
+        run: yarn typecheck
+        shell: bash
