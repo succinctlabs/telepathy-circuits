@@ -4,6 +4,10 @@ description: Installs Yarn 3 and dependencies
 runs:
   using: composite
   steps:
+    - name: Touch dummy yarn.lock
+      run: touch yarn.lock
+      shell: bash
+
     - uses: actions/setup-node@v3
       with:
         node-version: '16.15.0'
