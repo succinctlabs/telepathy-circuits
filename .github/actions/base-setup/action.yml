@@ -22,19 +22,6 @@ runs:
       run: yarn set version 3.3.1
       shell: bash
 
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir
-      run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - uses: actions/cache@v3
-      id: yarn-cache
-      with:
-        path: steps.yarn-cache-dir.outputs.dir
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn
-
     - name: Install dependencies
       if: steps.yarn-cache.outputs.cache-hit != 'true'
       run: yarn install --no-immutable
