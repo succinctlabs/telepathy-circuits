@@ -1,5 +1,9 @@
-pragma circom 2.0.3;
+pragma circom 2.0.5;
 
-include "../../circuits/aggregate_bls_verify.circom";
+include "../../circuits/hash_to_field.circom";
+include "../../../node_modules/circomlib/circuits/bitify.circom";
+include "../../circuits/pairing/fp.circom";
+include "../../circuits/pairing/field_elements_func.circom";
+include "../../circuits/constants.circom";
 
 component main {public [in]} = I2OSP(2);

@@ -147,6 +147,7 @@ template CheckCarryModP(n, k, m, overflow, p){
 
 // out has registers in [0, 2^n) but don't constrain out < p
 template SignedFpCarryModP(n, k, overflow, p){
+    assert(k < 50);
     signal input in[k]; 
     var m = (overflow + n - 1) \ n; 
     signal output X[m];
@@ -193,8 +194,10 @@ template SignedFpCarryModP(n, k, overflow, p){
 
 // save range check on Y compared to SignedFpCarryModP
 template SignedCheckCarryModToZero(n, k, overflow, p){
+    assert(k < 50);
     signal input in[k]; 
     var m = (overflow + n - 1) \ n; 
+    assert(m < 50);
     signal output X[m];
 
     assert( overflow < 251 );

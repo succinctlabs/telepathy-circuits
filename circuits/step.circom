@@ -67,7 +67,8 @@ template Step() {
     signal input finalizedBodyRoot[32];
 
     /* Sync Committee Protocol */
-    signal input pubkeys[SYNC_COMMITTEE_SIZE][2][K];
+    signal input pubkeysX[SYNC_COMMITTEE_SIZE][K];
+    signal input pubkeysY[SYNC_COMMITTEE_SIZE][K];
     signal input aggregationBits[SYNC_COMMITTEE_SIZE];
     signal input signature[2][2][K];
     signal input domain[32];
@@ -139,8 +140,8 @@ template Step() {
     for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
         verifySignature.aggregationBits[i] <== aggregationBits[i];
         for (var j = 0; j < K; j++) {
-            verifySignature.pubkeys[i][0][j] <== pubkeys[i][0][j];
-            verifySignature.pubkeys[i][1][j] <== pubkeys[i][1][j];
+            verifySignature.pubkeys[i][0][j] <== pubkeysX[i][j];
+            verifySignature.pubkeys[i][1][j] <== pubkeysY[i][j];
         }
     }
     for (var i = 0; i < 2; i++) {

@@ -75,6 +75,7 @@ function long_add(n, k, a, b){
 // d has k registers
 // output has k+1 registers
 function long_add4(n, k, a, b, c, d){
+    assert(k < 50);
     var carry = 0;
     var sum[50];
     for(var i=0; i < k; i++){
@@ -92,6 +93,8 @@ function long_add4(n, k, a, b, c, d){
 // assume k1 > k2
 // output has k1+1 registers
 function long_add_unequal(n, k1, k2, a, b){
+    assert(k1 > k2);
+    assert(k1 < 50);
     var carry = 0;
     var sum[50];
     for(var i=0; i<k1; i++){

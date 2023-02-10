@@ -1,0 +1,35 @@
+diff --git a/lib/index.d.ts b/lib/index.d.ts
+index 7ecb53261002060b68743b8c0e0c4306fbdeacf8..18c5d0cb3122c811340b8acbe53012b4fa20f511 100644
+--- a/lib/index.d.ts
++++ b/lib/index.d.ts
+@@ -28,6 +28,8 @@ export declare const utils: {
+     mod: typeof mod;
+     getDSTLabel(): string;
+     setDSTLabel(newLabel: string): void;
++    htfDefaults: typeof htfDefaults;
++    i2osp: (value: number, length: number) => Uint8Array;
+ };
+ declare function stringToBytes(str: string): Uint8Array;
+ declare function expand_message_xmd(msg: Uint8Array, DST: Uint8Array, lenInBytes: number, H?: Hash): Promise<Uint8Array>;
+diff --git a/lib/index.js b/lib/index.js
+index 731af6cc6cf0b367d00f1a412afde04b3f221600..7378df67ee9ae664d168385639300faf21d2bf9b 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -34,7 +34,7 @@ const sha256 = wrapHash(32, async (message) => {
+     }
+ });
+ const htfDefaults = {
+-    DST: 'BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_',
++    DST: 'BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_', // to comply with https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/beacon-chain.md#bls-signatures
+     p: math_js_1.CURVE.P,
+     m: 2,
+     k: 128,
+@@ -89,6 +89,8 @@ exports.utils = {
+         }
+         htfDefaults.DST = newLabel;
+     },
++    htfDefaults,
++    i2osp,
+ };
+ function numberTo32BytesBE(num) {
+     const length = 32;

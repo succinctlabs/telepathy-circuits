@@ -2,7 +2,6 @@
     "compilerOptions": {
         "target": "es2020",
         "module": "es2020",
-        "rootDir": "src",
         "outDir": "dist",
         "moduleResolution": "node",
         "esModuleInterop": true,
@@ -10,5 +9,6 @@
         "strict": true,
         "skipLibCheck": true,
         "composite": true
-    }
+    },
+    "exclude": ["dist/**/*"]
 }

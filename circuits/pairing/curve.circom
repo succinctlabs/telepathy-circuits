@@ -153,6 +153,7 @@ template PointOnTangent(n, k, a, p){
 //  (x_1 + x_2 + x_3)*(x_2 - x_1)^2 = (y_2 - y_1)^2 mod p
 //  (y_1 + y_3)*(x_2 - x_1) = (y_2 - y_1)*(x_1 - x_3) mod p
 template EllipticCurveAddUnequal(n, k, p) { 
+    assert(k < 50);
     signal input a[2][k];
     signal input b[2][k];
 

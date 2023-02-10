@@ -13,3 +13,7 @@ scripts/input.json
 scripts/proof.json
 scripts/public.json
 scripts/witness.wtns
+**/*.r1cs
+**/*.wasm
+**/*.sym
+test/generate_input_data.ts

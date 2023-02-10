@@ -415,6 +415,7 @@ template Fp6Invert(n, k, p) {
 // Call find_Fp12_inverse to compute inverse
 // Then check out * in = 1, out is an array of shorts
 template Fp12Invert(n, k, p){
+    assert(k < 50);
     signal input in[6][2][k];
     signal output out[6][2][k];
 

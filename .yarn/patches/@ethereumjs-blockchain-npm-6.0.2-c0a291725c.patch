@@ -1,0 +1,19 @@
+diff --git a/dist/db/cache.d.ts b/dist/db/cache.d.ts
+index 22b73f6d21fd7e23e9a7bc0f43c51dd888aa61f7..c91ab4789f4fc4291d090a04508c921a09a50883 100644
+--- a/dist/db/cache.d.ts
++++ b/dist/db/cache.d.ts
+@@ -1,11 +1,14 @@
+ /// <reference types="node" />
++// @ts-ignore
+ import * as LRUCache from 'lru-cache';
+ /**
+  * Simple LRU Cache that allows for keys of type Buffer
+  * @hidden
+  */
+ export declare class Cache<V> {
++    // @ts-ignore
+     _cache: LRUCache<string, V>;
++    // @ts-ignore
+     constructor(opts: LRUCache.Options<string, V>);
+     set(key: string | Buffer, value: V): void;
+     get(key: string | Buffer): V | undefined;

@@ -307,6 +307,7 @@ template Fp2Subtract(n, k, p){
 // Call find_Fp2_inverse to compute inverse
 // Then check out * in = 1, out is an array of shorts
 template Fp2Invert(n, k, p){
+    assert(k <= 50);
     signal input in[2][k];
     signal output out[2][k];
 
@@ -343,6 +344,7 @@ template Fp2Invert(n, k, p){
 // assume X has at most m registers, lying in [-2^{n+1}, 2^{n+1} )   NOTE n+1 not n DIFFERENT FROM Fp2CarryModP
 // out has registers in [0, 2^n) 
 template SignedFp2Divide(n, k, overflowa, overflowb, p){
+    assert(k <= 50);
     signal input a[2][k];
     signal input b[2][k]; 
     signal output out[2][k]; 
