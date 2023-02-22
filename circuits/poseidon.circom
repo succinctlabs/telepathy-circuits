@@ -4,14 +4,14 @@ include "../../node_modules/circomlib/circuits/poseidon.circom";
 
 /*
  * Helper functions for computing Poseidon commitments to the sync committee's
- * validator public keys (inside UpdateNextSyncCommittee()).
+ * validator public keys.
  */
 
 template PoseidonG1Array(LENGTH, N, K) {
     signal input pubkeys[LENGTH][2][K];
     signal output out;
 
-    component hasher = PoseidonFieldArray(LENGTH * 2 * K);
+    component hasher = PoseidonSponge(LENGTH * 2 * K);
     for (var i = 0; i < LENGTH; i++) {
         for (var j = 0; j < K; j++) {
             for (var l = 0; l < 2; l++) {
@@ -22,30 +22,32 @@ template PoseidonG1Array(LENGTH, N, K) {
     out <== hasher.out;
 }
 
-template PoseidonFieldArray(LENGTH) {
+
+template PoseidonSponge(LENGTH) {
+    assert(LENGTH % 16 == 0);
     signal input in[LENGTH];
     signal output out;
 
-    var POSEIDON_SIZE = 15;
-    var NUM_HASHERS = (LENGTH \ POSEIDON_SIZE) + 1;
-    component hashers[NUM_HASHERS];
+    var POSEIDON_SIZE = 16;
+    var NUM_ROUNDS = LENGTH \ POSEIDON_SIZE;
 
-    for (var i = 0; i < NUM_HASHERS; i++) {
-        if (i > 0) {
-            POSEIDON_SIZE = 16;
+    component hashers[NUM_ROUNDS];
+    for (var i = 0; i < NUM_ROUNDS; i++) {
+        if (i < NUM_ROUNDS - 1) {
+            hashers[i] = PoseidonEx(POSEIDON_SIZE, 1);
+        } else {
+            hashers[i] = PoseidonEx(POSEIDON_SIZE, 2);
         }
-        hashers[i] = Poseidon(POSEIDON_SIZE);
-        for (var j = 0; j < 15; j++) {
-            if (i * 15 + j >= LENGTH ) {
-                hashers[i].inputs[j] <== 0;
-            } else {
-                hashers[i].inputs[j] <== in[i*15 + j];
-            }
+        for (var j = 0; j < POSEIDON_SIZE; j++) {
+            hashers[i].inputs[j] <== in[i*POSEIDON_SIZE+j];
         }
-        if (i > 0) {
-            hashers[i].inputs[15] <== hashers[i- 1].out;
+
+        if (i == 0) {
+            hashers[i].initialState <== 0;
+        } else {
+            hashers[i].initialState <== hashers[i-1].out[0];
         }
     }
 
-    out <== hashers[NUM_HASHERS-1].out;
+    out <== hashers[NUM_ROUNDS-1].out[1];
 }

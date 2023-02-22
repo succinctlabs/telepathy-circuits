@@ -4,20 +4,21 @@ include "./sha256.circom";
 
 /*
  * Based on github.com/paulmillr/noble-bls12-381. Implements the logic for
- * converting a series of bytes (a messgage you want a signature over) into a
+ * converting a series of bytes (a messaage you want a signature over) into a
  * field element according to the BLS12-381 spec.
  */
 
-template HashToField(MSG_LEN, COUNT) {
+template HashToField(MSG_LEN) {
     signal input msg[MSG_LEN];
 
     var DST[43] = getDomainSeperatorTag();
     var P[7] = getBLS128381Prime();
     var DST_LEN = 43;
     var LOG2P = 381;
+    var COUNT = 2;
     var M = 2;
     var L = 64;
-    var BYTES_LEN = 256;
+    var BYTES_LEN = COUNT * M * L;
     var BITS_PER_REGISTER = 55;
     var NUM_REGISTERS = (8 * L + BITS_PER_REGISTER - 1) \ BITS_PER_REGISTER;
     var LOG_EXTRA = log_ceil(NUM_REGISTERS - 6);
@@ -201,7 +202,7 @@ template ExpandMessageXMD(MSG_LEN, DST_LEN, EXPANDED_LEN) {
         i2ospIndex[i-1] = I2OSP(1);
         i2ospIndex[i-1].in <== i + 1;
 
-        var S256S_INPUT_BYTE_LEN = B_IN_BYTES + 1 + DST_LEN + 1;
+        var S256S_INPUT_BYTE_LEN = S256S_0_INPUT_BYTE_LEN;
         s256s[i] = Sha256Bytes(S256S_INPUT_BYTE_LEN);
         for (var j = 0; j < S256S_INPUT_BYTE_LEN; j++) {
           if (j < B_IN_BYTES) {

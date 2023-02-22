@@ -8,8 +8,8 @@ include "./sha256.circom";
 
 /*
  * Implements all logic regarding verifying the sync committee validator set
- * and signature for LightClientStep(). This component is expensive and takes
- * over 20M constraints (which dominates the cost of LightClientStep()).
+ * and signature verification. This template is quite expensive and takes
+ * over 20M constraints (which dominates the cost of Step).
  */
 
 template VerifySyncCommitteeSignature(
@@ -31,7 +31,7 @@ template VerifySyncCommitteeSignature(
     }
 
     /* HASH SIGNING ROOT TO FIELD */
-    component hashToField = HashToField(32, 2);
+    component hashToField = HashToField(32);
     for (var i = 0; i < 32; i++) {
         hashToField.msg[i] <== signingRoot[i];
     }
@@ -50,17 +50,6 @@ template VerifySyncCommitteeSignature(
     }
     syncCommitteeRoot === computeSyncCommitteeRoot.out;
 
-    /* VERIFY THAT THE WITNESSED Y-COORDINATES MAKE THE PUBKEYS LAY ON THE CURVE */
-    component isValidPoint[SYNC_COMMITTEE_SIZE];
-    for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
-        isValidPoint[i] = SubgroupCheckG1WithValidX(N, K);
-        for (var j = 0; j < 2; j++) {
-            for (var k = 0; k < K; k++) {
-                isValidPoint[i].in[j][k] <== pubkeys[i][j][k];
-            }
-        }
-    }
-
     /* COMPUTE AGGREGATE PUBKEY BASED ON AGGREGATION BITS */
     component getAggregatePublicKey = G1AddMany(
         SYNC_COMMITTEE_SIZE,
@@ -76,6 +65,7 @@ template VerifySyncCommitteeSignature(
             }
         }
     }
+    getAggregatePublicKey.isPointAtInfinity === 0;
 
     /* VERIFY BLS SIGNATURE */
     component verifySignature = CoreVerifyPubkeyG1(N, K);

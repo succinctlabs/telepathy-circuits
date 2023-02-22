@@ -1,15 +1,3 @@
-/*
- _____         _                       _     _           
-|_   _|  ___  | |  ___   _ __   __ _  | |_  | |_    _  _ 
-  | |   / -_) | | / -_) | '_ \ / _` | |  _| | ' \  | || |
-  |_|   \___| |_| \___| | .__/ \__,_|  \__| |_||_|  \_, |
-                        |_|                         |__/ 
-
-Created on October 28th 2022 by Succinct Labs
-Code: https://github.com/succinctlabs/telepathy
-License: GPL-3
-*/
-
 pragma circom 2.0.5;
 
 include "./inputs.circom";
@@ -24,20 +12,6 @@ include "./sync_committee.circom";
  * verification of the aggregated BLS signature by the sync committee and 
  * various merkle proofs (e.g., finality) into a zkSNARK which can be verified
  * on-chain for ~200K gas. This circuit is called by step() in the light client.
- *
- * @input  attestedHeader         The header attested by the sync committee
- * @input  finalizedHeader        The finalized header inside attested header
- * @input  pubkeys                Public keys of the sync committee
- * @input  aggregationBits        Bitmap indicating which validators have signed
- * @input  signature              An aggregated signature over signingRoot
- * @input  domain                 sha256(forkVersion, genesisValidatorsRoot)
- * @input  signingRoot            sha256(attestedHeaderRoot, domain)
- * @input  participation          sum(aggregationBits)
- * @input  syncCommitteePoseidon  A commitment to the sync committee pubkeys
- * @input  finalityBranch         A Merkle proof for finalizedHeader
- * @input  executionStateRoot     The eth1 state root inside finalizedHeader
- * @input  executionStateBranch   A Merkle proof for executionStateRoot
- * @input  publicInputsRoot       A commitment to all "public inputs"
  */
 template Step() {
     var N = getNumBitsPerRegister();
@@ -87,21 +61,22 @@ template Step() {
     signal input publicInputsRoot;
 
     /* REDUCE CALLDATA COSTS VIA THE PUBLIC INPUTS ROOT */
-    component serializeInputs = SerializeLightClientStepInputs(
+    component commitToPublicInputs = CommitToPublicInputsForStep(
         TRUNCATED_SHA256_SIZE
     );
     for (var i = 0; i < 32; i++) {
-        serializeInputs.finalizedSlot[i] <== finalizedSlot[i];
-        serializeInputs.finalizedHeaderRoot[i] <== finalizedHeaderRoot[i];
-        serializeInputs.executionStateRoot[i] <== executionStateRoot[i];
+        commitToPublicInputs.attestedSlot[i] <== attestedSlot[i];
+        commitToPublicInputs.finalizedSlot[i] <== finalizedSlot[i];
+        commitToPublicInputs.finalizedHeaderRoot[i] <== finalizedHeaderRoot[i];
+        commitToPublicInputs.executionStateRoot[i] <== executionStateRoot[i];
     }
-    serializeInputs.participation <== participation;
-    serializeInputs.syncCommitteePoseidon <== syncCommitteePoseidon;
+    commitToPublicInputs.participation <== participation;
+    commitToPublicInputs.syncCommitteePoseidon <== syncCommitteePoseidon;
 
     component bitifyPublicInputsRoot = Num2Bits(TRUNCATED_SHA256_SIZE);
     bitifyPublicInputsRoot.in <== publicInputsRoot;
     for (var i = 0; i < TRUNCATED_SHA256_SIZE; i++) {
-        bitifyPublicInputsRoot.out[i] === serializeInputs.out[i];
+        bitifyPublicInputsRoot.out[i] === commitToPublicInputs.out[i];
     }
 
     /* VALIDATE BEACON CHAIN DATA AGAINST SIGNING ROOT */

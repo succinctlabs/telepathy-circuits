@@ -48,6 +48,14 @@ function getG1PointSize() {
     return 48;
 }
 
+function getCurveA1() {
+    return 0;
+}
+
+function getCurveB1() {
+    return 4;
+}
+
 function getDomainSeperatorTag() {
     var dst[43];
     dst[0] = 66;
