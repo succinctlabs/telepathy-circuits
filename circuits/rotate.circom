@@ -94,6 +94,8 @@ template Rotate() {
             pubkeyRangeChecksY[i][j] = Num2Bits(N);
             pubkeyRangeChecksY[i][j].in <== pubkeysBigIntY[i][j];
         }
+        pubkeyReducedChecksX[i].out === 1;
+        pubkeyReducedChecksY[i].out === 1;
     }
 
     /* VERIFY BYTE AND BIG INT REPRESENTATION OF G1 POINTS MATCH */
