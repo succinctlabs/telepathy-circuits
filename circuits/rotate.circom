@@ -1,15 +1,3 @@
-/*
- _____         _                       _     _           
-|_   _|  ___  | |  ___   _ __   __ _  | |_  | |_    _  _ 
-  | |   / -_) | | / -_) | '_ \ / _` | |  _| | ' \  | || |
-  |_|   \___| |_| \___| | .__/ \__,_|  \__| |_||_|  \_, |
-                        |_|                         |__/ 
-
-Created on October 28th 2022 by Succinct Labs
-Code: https://github.com/succinctlabs/telepathy
-License: GPL-3
-*/
-
 pragma circom 2.0.5;
 
 include "./inputs.circom";
@@ -26,11 +14,12 @@ include "./sync_committee.circom";
  * in the light client.
  *
  * @input  pubkeyBytes             The sync committee pubkeys in bytes
- * @input  aggregatePubkeyBytes    The aggregate sync committee pubkey in bytes
+ * @input  aggregatePubkeyBytesX   The aggregate sync committee pubkey in bytes
  * @input  pubkeysBigInt           The sync committee pubkeys in bigint
- * @input  aggregatePubkeyBigInt   The aggregate sync committee pubkey in bigint
- * @output syncCommitteeSSZ        A SSZ commitment to the sync committee
- * @output syncCommitteePoseidon   A Poseidon commitment ot the sync committee
+ * @input  syncCommitteeSSZ        A SSZ commitment to the sync committee
+ * @input  syncCommitteeBranch     A Merkle proof for the sync committee against finalizedHeader
+ * @input  syncCommitteePoseidon   A Poseidon commitment ot the sync committee
+ * @input  finalizedHeader         The finalized header which provides the next sync committee
  */
 template Rotate() {
     var N = getNumBitsPerRegister();
@@ -40,6 +29,7 @@ template Rotate() {
     var SYNC_COMMITTEE_DEPTH = getSyncCommitteeDepth();
     var SYNC_COMMITTEE_INDEX = getSyncCommitteeIndex();
     var G1_POINT_SIZE = getG1PointSize();
+    var P[K] = getBLS128381Prime();
 
     /* Sync Commmittee */
     signal input pubkeysBytes[SYNC_COMMITTEE_SIZE][G1_POINT_SIZE];
@@ -86,6 +76,26 @@ template Rotate() {
         verifySyncCommittee.out[i] === finalizedStateRoot[i];
     }
 
+    /* VERIFY PUBKEY BIGINTS ARE NOT ILL-FORMED */
+    component pubkeyReducedChecksX[SYNC_COMMITTEE_SIZE];
+    component pubkeyReducedChecksY[SYNC_COMMITTEE_SIZE];
+    component pubkeyRangeChecksX[SYNC_COMMITTEE_SIZE][K];
+    component pubkeyRangeChecksY[SYNC_COMMITTEE_SIZE][K];
+    for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
+        pubkeyReducedChecksX[i] = BigLessThan(N, K);
+        pubkeyReducedChecksY[i] = BigLessThan(N, K);
+        for (var j = 0; j < K; j++) {
+            pubkeyReducedChecksX[i].a[j] <== pubkeysBigIntX[i][j];
+            pubkeyReducedChecksX[i].b[j] <== P[j];
+            pubkeyReducedChecksY[i].a[j] <== pubkeysBigIntY[i][j];
+            pubkeyReducedChecksY[i].b[j] <== P[j];
+            pubkeyRangeChecksX[i][j] = Num2Bits(N);
+            pubkeyRangeChecksX[i][j].in <== pubkeysBigIntX[i][j];
+            pubkeyRangeChecksY[i][j] = Num2Bits(N);
+            pubkeyRangeChecksY[i][j].in <== pubkeysBigIntY[i][j];
+        }
+    }
+
     /* VERIFY BYTE AND BIG INT REPRESENTATION OF G1 POINTS MATCH */
     component g1BytesToBigInt[SYNC_COMMITTEE_SIZE];
     for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
@@ -99,12 +109,12 @@ template Rotate() {
     }
 
     /* VERIFY THAT THE WITNESSED Y-COORDINATES MAKE THE PUBKEYS LAY ON THE CURVE */
-    component isValidPoint[SYNC_COMMITTEE_SIZE];
+    component verifyPointOnCurve[SYNC_COMMITTEE_SIZE];
     for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
-        isValidPoint[i] = SubgroupCheckG1WithValidX(N, K);
+        verifyPointOnCurve[i] = PointOnBLSCurve(N, K);
         for (var j = 0; j < K; j++) {
-            isValidPoint[i].in[0][j] <== pubkeysBigIntX[i][j];
-            isValidPoint[i].in[1][j] <== pubkeysBigIntY[i][j];
+            verifyPointOnCurve[i].in[0][j] <== pubkeysBigIntX[i][j];
+            verifyPointOnCurve[i].in[1][j] <== pubkeysBigIntY[i][j];
         }
     }
 

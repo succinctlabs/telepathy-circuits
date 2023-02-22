@@ -17,6 +17,7 @@ template G1AddMany(SYNC_COMMITTEE_SIZE, LOG_2_SYNC_COMMITTEE_SIZE, N, K) {
     signal input pubkeys[SYNC_COMMITTEE_SIZE][2][K];
     signal input bits[SYNC_COMMITTEE_SIZE];
     signal output out[2][K];
+    signal output isPointAtInfinity;
 
     component reducers[LOG_2_SYNC_COMMITTEE_SIZE];
     for (var i = 0; i < LOG_2_SYNC_COMMITTEE_SIZE; i++) {
@@ -26,7 +27,7 @@ template G1AddMany(SYNC_COMMITTEE_SIZE, LOG_2_SYNC_COMMITTEE_SIZE, N, K) {
             if (i == 0) {
                 reducers[i].bits[j] <== bits[j];
             } else {
-                reducers[i].bits[j] <== reducers[i-1].out_bits[j];
+                reducers[i].bits[j] <== reducers[i-1].outBits[j];
             }
             for (var q = 0; q < K; q++) {
                 if (i == 0) {
@@ -45,6 +46,7 @@ template G1AddMany(SYNC_COMMITTEE_SIZE, LOG_2_SYNC_COMMITTEE_SIZE, N, K) {
             out[i][j] <== reducers[LOG_2_SYNC_COMMITTEE_SIZE-1].out[0][i][j];
         }
     }
+    isPointAtInfinity <== 1 - reducers[LOG_2_SYNC_COMMITTEE_SIZE-1].outBits[0];
 }
 
 
@@ -53,7 +55,7 @@ template G1Reduce(BATCH_SIZE, N, K) {
     signal input pubkeys[BATCH_SIZE][2][K];
     signal input bits[BATCH_SIZE];
     signal output out[OUTPUT_BATCH_SIZE][2][K];
-    signal output out_bits[OUTPUT_BATCH_SIZE];
+    signal output outBits[OUTPUT_BATCH_SIZE];
 
     component adders[OUTPUT_BATCH_SIZE];
     for (var i = 0; i < OUTPUT_BATCH_SIZE; i++) {
@@ -69,7 +71,7 @@ template G1Reduce(BATCH_SIZE, N, K) {
     }
 
     for (var i = 0; i < OUTPUT_BATCH_SIZE; i++) {
-        out_bits[i] <== adders[i].out_bit;
+        outBits[i] <== adders[i].outBit;
         for (var j = 0; j < 2; j++) {
             for (var l = 0; l < K; l++) {
                 out[i][j][l] <== adders[i].out[j][l];
@@ -80,6 +82,8 @@ template G1Reduce(BATCH_SIZE, N, K) {
 
 
 template parallel G1Add(N, K) {
+    var A1 = getCurveA1();
+    var B1 = getCurveB1();
     var P[7] = getBLS128381Prime();
     
     signal input pubkey1[2][K];
@@ -87,12 +91,12 @@ template parallel G1Add(N, K) {
     signal input bit1;
     signal input bit2;
 
-    /* COMPUTE BLS ADDITION */
     signal output out[2][K];
-    signal output out_bit;
-    out_bit <== bit1 + bit2 - bit1 * bit2;
+    signal output outBit;
 
-    component adder = EllipticCurveAddUnequal(55, 7, P);
+    component adder = EllipticCurveAdd(N, K, A1, B1, P);
+    adder.aIsInfinity <== 1 - bit1;
+    adder.bIsInfinity <== 1 - bit2;
     for (var i = 0; i < 2; i++) {
         for (var j = 0; j < K; j++) {
             adder.a[i][j] <== pubkey1[i][j];
@@ -100,41 +104,12 @@ template parallel G1Add(N, K) {
         }
     }
 
-    signal tmp1[2][K];
     for (var i = 0; i < 2; i++) {
         for (var j = 0; j < K; j++) {
-            tmp1[i][j] <== bit2 * pubkey2[i][j];
+            out[i][j] <== adder.out[i][j];
         }
     }
-    
-    signal tmp2[2][K];
-    for (var i = 0; i < 2; i++) {
-        for (var j = 0; j < K; j++) {
-            tmp2[i][j] <== (1 - bit1) * tmp1[i][j];
-        }
-    }
-
-    signal tmp3[2][K];
-    for (var i = 0; i < 2; i++) {
-        for (var j = 0; j < K; j++) {
-            tmp3[i][j] <== bit1 * pubkey1[i][j] + tmp2[i][j];
-        }
-    }
-
-    signal tmp4[2][K];
-    signal and;
-    and <== bit1 * bit2;
-    for (var i = 0; i < 2; i++) {
-        for (var j = 0; j < K; j++) {
-            tmp4[i][j] <== (1 - and) * tmp3[i][j];
-        }
-    }
-
-    for (var i = 0; i < 2; i++) {
-        for (var j = 0; j < K; j++) {
-            out[i][j] <== and * adder.out[i][j] + tmp4[i][j];
-        }
-    }
+    outBit <== 1 - adder.isInfinity;
 }
 
 

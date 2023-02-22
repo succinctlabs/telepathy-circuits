@@ -6,4 +6,4 @@ include "../../circuits/pairing/fp.circom";
 include "../../circuits/pairing/field_elements_func.circom";
 include "../../circuits/constants.circom";
 
-component main {public [msg]} = HashToField(10, 2);
+component main {public [msg]} = HashToField(10);

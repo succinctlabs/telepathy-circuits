@@ -224,6 +224,16 @@ template OptSimpleSWU2(n, k){
 
     sgn_Y.out === sgn_in.out;
     
+    // verify that out does not contain any ill-formed bigints
+    component rangeChecks[2][2][k];
+    for(var i = 0; i < 2; i++) {
+        for (var j = 0; j < 2; j++) {
+            for (var l = 0; l < k; l++) {
+                rangeChecks[i][j][l] = Num2Bits(n);
+                rangeChecks[i][j][l].in <== out[i][j][l];
+            }
+        }
+    }
 }
 
 /*
@@ -720,7 +730,7 @@ template SubgroupCheckG1(n, k){
     is_eq.out === 1;
 }
 
-template SubgroupCheckG1WithValidX(n, k){
+template PointOnBLSCurve(n, k){
     signal input in[2][k];
     var p[50] = get_BLS12_381_prime(n, k);
     var x_abs = get_BLS12_381_parameter();
