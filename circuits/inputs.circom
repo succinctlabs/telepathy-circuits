@@ -41,7 +41,7 @@ template CommitToPublicInputsForStep(TRUNCATED_SHA256_SIZE) {
     for (var i = 0; i < 32; i++) {
         byteify0[i] = Bits2Num(8);
         for (var j = 0; j < 8; j++) {
-            if (i*8+j < TRUNCATED_SHA256_SIZE) {
+            if (i*8+j <= TRUNCATED_SHA256_SIZE) {
                 byteify0[i].in[j] <== bitify0.out[i*8+j];
             } else {
                 byteify0[i].in[j] <== 0;

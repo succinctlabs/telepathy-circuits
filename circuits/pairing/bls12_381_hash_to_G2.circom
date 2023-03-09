@@ -730,7 +730,7 @@ template SubgroupCheckG1(n, k){
     is_eq.out === 1;
 }
 
-template PointOnBLSCurve(n, k){
+template PointOnBLSCurveNoCheck(n, k){
     signal input in[2][k];
     var p[50] = get_BLS12_381_prime(n, k);
     var x_abs = get_BLS12_381_parameter();

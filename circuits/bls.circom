@@ -14,6 +14,10 @@ include "./sha256.circom";
  */
 
 template G1AddMany(SYNC_COMMITTEE_SIZE, LOG_2_SYNC_COMMITTEE_SIZE, N, K) {
+    // It is assumed that none of the input signals are ill-formed. The public
+    // keys are checked such that they are all properly reduced and less than
+    // the prime of the base field. The bits are assumed to be range checked
+    // such that the only possible values are 0 or 1.
     signal input pubkeys[SYNC_COMMITTEE_SIZE][2][K];
     signal input bits[SYNC_COMMITTEE_SIZE];
     signal output out[2][K];
@@ -110,10 +114,12 @@ template parallel G1Add(N, K) {
         }
     }
     outBit <== 1 - adder.isInfinity;
+    outBit * (outBit - 1) === 0;
 }
 
 
 template G1BytesToBigInt(N, K, G1_POINT_SIZE) {
+    assert(G1_POINT_SIZE == 48);
     signal input in[G1_POINT_SIZE];
     signal output out[K];
 
@@ -135,7 +141,7 @@ template G1BytesToBigInt(N, K, G1_POINT_SIZE) {
         convertBitsToBigInt[i] = Bits2Num(N);
         for (var j = 0; j < N; j++) {
             if (i * N + j >= G1_POINT_SIZE * 8 || i * N + j >= 381) {
-                convertBitsToBigInt[i].in[j] <== 0; // TODO: fix last bit
+                convertBitsToBigInt[i].in[j] <== 0;
             } else {
                 convertBitsToBigInt[i].in[j] <== pubkeyBits[i * N + j];
             }
@@ -145,6 +151,10 @@ template G1BytesToBigInt(N, K, G1_POINT_SIZE) {
     for (var i = 0; i < K; i++) {
         out[i] <== convertBitsToBigInt[i].out;
     }
+
+    // We check this bit is not 0 to make sure the point is not zero.
+    // Reference: https://github.com/paulmillr/noble-bls12-381/blob/main/index.ts#L306
+    pubkeyBits[382] === 0;
 }
 
 
@@ -165,6 +175,8 @@ template G1BytesToSignFlag(N, K, G1_POINT_SIZE) {
         }
     }    
 
+    // We extract the sign flag to know whether the completed point is y or -y.
+    // Reference: https://github.com/paulmillr/noble-bls12-381/blob/main/index.ts#L313
     out <== pubkeyBits[381];
 }
 

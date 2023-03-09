@@ -1,3 +1,15 @@
+/*
+ _____         _                       _     _           
+|_   _|  ___  | |  ___   _ __   __ _  | |_  | |_    _  _ 
+  | |   / -_) | | / -_) | '_ \ / _` | |  _| | ' \  | || |
+  |_|   \___| |_| \___| | .__/ \__,_|  \__| |_||_|  \_, |
+                        |_|                         |__/ 
+
+Created on March 6th 2023 by Succinct Labs
+Code: https://github.com/succinctlabs/telepathy-circuits
+License: GPL-3
+*/
+
 pragma circom 2.0.5;
 
 include "./inputs.circom";
@@ -13,13 +25,15 @@ include "./sync_committee.circom";
  * period to reduce the number of constraints (~70M) in the Step circuit. Called by rotate()
  * in the light client.
  *
- * @input  pubkeyBytes             The sync committee pubkeys in bytes
- * @input  aggregatePubkeyBytesX   The aggregate sync committee pubkey in bytes
- * @input  pubkeysBigInt           The sync committee pubkeys in bigint
- * @input  syncCommitteeSSZ        A SSZ commitment to the sync committee
- * @input  syncCommitteeBranch     A Merkle proof for the sync committee against finalizedHeader
- * @input  syncCommitteePoseidon   A Poseidon commitment ot the sync committee
- * @input  finalizedHeader         The finalized header which provides the next sync committee
+ * @input  pubkeysBytes             The sync committee pubkeys in bytes
+ * @input  aggregatePubkeyBytesX    The aggregate sync committee pubkey in bytes
+ * @input  pubkeysBigIntX           The sync committee pubkeys in bigint form, X coordinate.
+ * @input  pubkeysBigIntY           The sync committee pubkeys in bigint form, Y coordinate.
+ * @input  syncCommitteeSSZ         A SSZ commitment to the sync committee
+ * @input  syncCommitteeBranch      A Merkle proof for the sync committee against finalizedHeader
+ * @input  syncCommitteePoseidon    A Poseidon commitment ot the sync committee
+ * @input  finalized{HeaderRoot,Slot,ProposerIndex,ParentRoot,StateRoot,BodyRoot}
+                                    The finalized header and all associated fields.
  */
 template Rotate() {
     var N = getNumBitsPerRegister();
@@ -113,7 +127,7 @@ template Rotate() {
     /* VERIFY THAT THE WITNESSED Y-COORDINATES MAKE THE PUBKEYS LAY ON THE CURVE */
     component verifyPointOnCurve[SYNC_COMMITTEE_SIZE];
     for (var i = 0; i < SYNC_COMMITTEE_SIZE; i++) {
-        verifyPointOnCurve[i] = PointOnBLSCurve(N, K);
+        verifyPointOnCurve[i] = PointOnBLSCurveNoCheck(N, K);
         for (var j = 0; j < K; j++) {
             verifyPointOnCurve[i].in[0][j] <== pubkeysBigIntX[i][j];
             verifyPointOnCurve[i].in[1][j] <== pubkeysBigIntY[i][j];
@@ -168,4 +182,4 @@ template Rotate() {
     syncCommitteePoseidon === computePoseidonRoot.out;
 }
 
-component main {public [finalizedHeaderRoot, syncCommitteeSSZ, syncCommitteePoseidon]} = Rotate();
+component main {public [finalizedHeaderRoot, syncCommitteePoseidon, syncCommitteeSSZ]} = Rotate();

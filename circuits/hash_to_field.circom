@@ -19,7 +19,7 @@ template HashToField(MSG_LEN) {
     var M = 2;
     var L = 64;
     var BYTES_LEN = COUNT * M * L;
-    var BITS_PER_REGISTER = 55;
+    var BITS_PER_REGISTER = getNumBitsPerRegister();
     var NUM_REGISTERS = (8 * L + BITS_PER_REGISTER - 1) \ BITS_PER_REGISTER;
     var LOG_EXTRA = log_ceil(NUM_REGISTERS - 6);
     var tmp;
@@ -258,6 +258,9 @@ template ByteArrayXOR(n) {
 
 
 template I2OSP(l) {
+    // There are no overflow scenarios as there are only at most 31 registers
+    // and each register can only hold 8 bits. The base field has ~254 bits,
+    // which is larger than 31 * 8 = 248 bits.
     assert(l < 31);
     signal input in;
     signal output out[l];

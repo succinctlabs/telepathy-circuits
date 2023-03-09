@@ -1,3 +1,15 @@
+/*
+ _____         _                       _     _           
+|_   _|  ___  | |  ___   _ __   __ _  | |_  | |_    _  _ 
+  | |   / -_) | | / -_) | '_ \ / _` | |  _| | ' \  | || |
+  |_|   \___| |_| \___| | .__/ \__,_|  \__| |_||_|  \_, |
+                        |_|                         |__/ 
+
+Created on March 6th 2023 by Succinct Labs
+Code: https://github.com/succinctlabs/telepathy-circuits
+License: GPL-3
+*/
+
 pragma circom 2.0.5;
 
 include "./inputs.circom";
@@ -11,7 +23,24 @@ include "./sync_committee.circom";
  * Reduces the gas cost of processing a light client update by offloading the 
  * verification of the aggregated BLS signature by the sync committee and 
  * various merkle proofs (e.g., finality) into a zkSNARK which can be verified
- * on-chain for ~200K gas. This circuit is called by step() in the light client.
+ * on-chain for ~200K gas. 
+ *
+ * @input  attested{HeaderRoot,Slot,ProposerIndex,ParentRoot,StateRoot,BodyRoot}
+                                  The header attested to by the sync committee and all associated fields.
+ * @input  finalized{HeaderRoot,Slot,ProposerIndex,ParentRoot,StateRoot,BodyRoot}
+                                  The finalized header committed to inside the attestedHeader.
+ * @input  pubkeysX               X-coordinate of the public keys of the sync committee in bigint form.
+ * @input  pubkeysY               Y-coordinate of the public keys of the sync committee in bigint form.
+ * @input  aggregationBits        Bitmap indicating which validators have signed
+ * @input  signature              An aggregated signature over signingRoot
+ * @input  domain                 sha256(forkVersion, genesisValidatorsRoot)
+ * @input  signingRoot            sha256(attestedHeaderRoot, domain)
+ * @input  participation          sum(aggregationBits)
+ * @input  syncCommitteePoseidon  A commitment to the sync committee pubkeys from rotate.circom.
+ * @input  finalityBranch         A Merkle proof for finalizedHeader
+ * @input  executionStateRoot     The eth1 state root inside finalizedHeader
+ * @input  executionStateBranch   A Merkle proof for executionStateRoot
+ * @input  publicInputsRoot       A commitment to all "public inputs"
  */
 template Step() {
     var N = getNumBitsPerRegister();
