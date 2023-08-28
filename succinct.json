@@ -1,5 +1,5 @@
 {
 	"preset": "circom",
-	"build_command": "curl -L -o /root/public/prod-circuits.tar.gz 'https://s3.amazonaws.com/circom.artifacts/step_cpp.tar.gz' && tar -xzf /root/public/prod-circuits.tar.gz -C /root/public && rm -rf /root/public/prod-circuits.tar.gz && chmod +x /root/public/prod-circuits/*",
+	"build_command": "false",
 	"prove_command": "/root/public/prod-circuits/step_cpp/step /root/public/input.json /root/public/witness.bin && /usr/bin/prover /root/public/prod-circuits/step_cpp/p2.zkey /root/public/witness.bin /root/public/proof.json /root/public/public.json"
 }
